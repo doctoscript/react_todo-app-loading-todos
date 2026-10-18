@@ -1,20 +1,41 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import classNames from 'classnames';
 import { Todo } from './types/Todo';
 import { FilterStatus } from './types/FilterStatus';
+import { ErrorMessage } from './types/ErrorMessage';
 import { getTodos } from './api/todos';
+
+// Конфігурація посилань фільтрації для картографування (.map)
+const FILTER_NAV_ITEMS = [
+  { status: FilterStatus.All, label: 'All', href: '#/', cy: 'FilterLinkAll' },
+  {
+    status: FilterStatus.Active,
+    label: 'Active',
+    href: '#/active',
+    cy: 'FilterLinkActive',
+  },
+  {
+    status: FilterStatus.Completed,
+    label: 'Completed',
+    href: '#/completed',
+    cy: 'FilterLinkCompleted',
+  },
+];
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<ErrorMessage>(
+    ErrorMessage.None,
+  );
   const [filter, setFilter] = useState<FilterStatus>(FilterStatus.All);
 
   useEffect(() => {
-    setErrorMessage('');
+    setErrorMessage(ErrorMessage.None);
 
     getTodos()
       .then(setTodos)
       .catch(() => {
-        setErrorMessage('Unable to load todos');
+        setErrorMessage(ErrorMessage.Load);
       });
   }, []);
 
@@ -24,7 +45,7 @@ export const App: React.FC = () => {
     }
 
     const timerId = setTimeout(() => {
-      setErrorMessage('');
+      setErrorMessage(ErrorMessage.None);
     }, 3000);
 
     return () => {
@@ -63,9 +84,9 @@ export const App: React.FC = () => {
           {todos.length > 0 && (
             <button
               type="button"
-              className={`todoapp__toggle-all ${
-                activeTodosCount === 0 ? 'active' : ''
-              }`}
+              className={classNames('todoapp__toggle-all', {
+                active: activeTodosCount === 0,
+              })}
               data-cy="ToggleAllButton"
             />
           )}
@@ -87,7 +108,9 @@ export const App: React.FC = () => {
                 <div
                   key={todo.id}
                   data-cy="Todo"
-                  className={`todo ${todo.completed ? 'completed' : ''}`}
+                  className={classNames('todo', {
+                    completed: todo.completed,
+                  })}
                 >
                   <label
                     className="todo__status-label"
@@ -118,9 +141,10 @@ export const App: React.FC = () => {
 
                   <div data-cy="TodoLoader" className="modal overlay">
                     <div
-                      className={
-                        'modal-background ' + 'has-background-white-ter'
-                      }
+                      className={classNames(
+                        'modal-background',
+                        'has-background-white-ter',
+                      )}
                     />
                     <div className="loader" />
                   </div>
@@ -134,38 +158,19 @@ export const App: React.FC = () => {
               </span>
 
               <nav className="filter" data-cy="Filter">
-                <a
-                  href="#/"
-                  className={`filter__link ${
-                    filter === FilterStatus.All ? 'selected' : ''
-                  }`}
-                  data-cy="FilterLinkAll"
-                  onClick={() => setFilter(FilterStatus.All)}
-                >
-                  All
-                </a>
-
-                <a
-                  href="#/active"
-                  className={`filter__link ${
-                    filter === FilterStatus.Active ? 'selected' : ''
-                  }`}
-                  data-cy="FilterLinkActive"
-                  onClick={() => setFilter(FilterStatus.Active)}
-                >
-                  Active
-                </a>
-
-                <a
-                  href="#/completed"
-                  className={`filter__link ${
-                    filter === FilterStatus.Completed ? 'selected' : ''
-                  }`}
-                  data-cy="FilterLinkCompleted"
-                  onClick={() => setFilter(FilterStatus.Completed)}
-                >
-                  Completed
-                </a>
+                {FILTER_NAV_ITEMS.map(({ status, label, href, cy }) => (
+                  <a
+                    key={status}
+                    href={href}
+                    data-cy={cy}
+                    className={classNames('filter__link', {
+                      selected: filter === status,
+                    })}
+                    onClick={() => setFilter(status)}
+                  >
+                    {label}
+                  </a>
+                ))}
               </nav>
 
               <button
@@ -183,16 +188,19 @@ export const App: React.FC = () => {
 
       <div
         data-cy="ErrorNotification"
-        className={
-          'notification is-danger is-light ' +
-          `has-text-weight-normal ${!errorMessage ? 'hidden' : ''}`
-        }
+        className={classNames(
+          'notification',
+          'is-danger',
+          'is-light',
+          'has-text-weight-normal',
+          { hidden: !errorMessage },
+        )}
       >
         <button
           data-cy="HideErrorButton"
           type="button"
           className="delete"
-          onClick={() => setErrorMessage('')}
+          onClick={() => setErrorMessage(ErrorMessage.None)}
         />
         {errorMessage}
       </div>
