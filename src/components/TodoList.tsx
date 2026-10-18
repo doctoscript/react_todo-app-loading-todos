@@ -2,7 +2,7 @@ import React from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import PropTypes from 'prop-types';
 import { Todo } from '../types/Todo';
-import { TodoItem } from './TodoItem';
+import { TodoItem } from './Todo';
 
 interface Props {
   todos: Todo[];
