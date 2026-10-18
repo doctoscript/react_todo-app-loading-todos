@@ -4,23 +4,9 @@ import { Todo } from './types/Todo';
 import { FilterStatus } from './types/FilterStatus';
 import { ErrorMessage } from './types/ErrorMessage';
 import { getTodos } from './api/todos';
-
-// Конфігурація посилань фільтрації для картографування (.map)
-const FILTER_NAV_ITEMS = [
-  { status: FilterStatus.All, label: 'All', href: '#/', cy: 'FilterLinkAll' },
-  {
-    status: FilterStatus.Active,
-    label: 'Active',
-    href: '#/active',
-    cy: 'FilterLinkActive',
-  },
-  {
-    status: FilterStatus.Completed,
-    label: 'Completed',
-    href: '#/completed',
-    cy: 'FilterLinkCompleted',
-  },
-];
+import { TodoList } from './components/TodoList';
+import { Filter } from './components/Filter';
+import { NewTodo } from './components/NewTodo';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -91,87 +77,19 @@ export const App: React.FC = () => {
             />
           )}
 
-          <form onSubmit={e => e.preventDefault()}>
-            <input
-              data-cy="NewTodoField"
-              type="text"
-              className="todoapp__new-todo"
-              placeholder="What needs to be done?"
-            />
-          </form>
+          <NewTodo />
         </header>
 
         {todos.length > 0 && (
           <>
-            <section className="todoapp__main" data-cy="TodoList">
-              {visibleTodos.map(todo => (
-                <div
-                  key={todo.id}
-                  data-cy="Todo"
-                  className={classNames('todo', {
-                    completed: todo.completed,
-                  })}
-                >
-                  <label
-                    className="todo__status-label"
-                    htmlFor={`todo-status-${todo.id}`}
-                    aria-label="Todo status"
-                  >
-                    <input
-                      id={`todo-status-${todo.id}`}
-                      data-cy="TodoStatus"
-                      type="checkbox"
-                      className="todo__status"
-                      checked={todo.completed}
-                      readOnly
-                    />
-                  </label>
-
-                  <span data-cy="TodoTitle" className="todo__title">
-                    {todo.title}
-                  </span>
-
-                  <button
-                    type="button"
-                    className="todo__remove"
-                    data-cy="TodoDelete"
-                  >
-                    ×
-                  </button>
-
-                  <div data-cy="TodoLoader" className="modal overlay">
-                    <div
-                      className={classNames(
-                        'modal-background',
-                        'has-background-white-ter',
-                      )}
-                    />
-                    <div className="loader" />
-                  </div>
-                </div>
-              ))}
-            </section>
+            <TodoList todos={visibleTodos} />
 
             <footer className="todoapp__footer" data-cy="Footer">
               <span className="todo-count" data-cy="TodosCounter">
                 {activeTodosCount} items left
               </span>
 
-              <nav className="filter" data-cy="Filter">
-                {FILTER_NAV_ITEMS.map(({ status, label, href, cy }) => (
-                  <a
-                    key={status}
-                    href={href}
-                    data-cy={cy}
-                    className={classNames('filter__link', {
-                      selected: filter === status,
-                    })}
-                    onClick={() => setFilter(status)}
-                  >
-                    {label}
-                  </a>
-                ))}
-              </nav>
+              <Filter filter={filter} onFilterChange={setFilter} />
 
               <button
                 type="button"
